@@ -1,4 +1,5 @@
 module.exports = {
+  cacheDirectory: '.jest',
   globals: {
     'ts-jest': {
       diagnostics: {
