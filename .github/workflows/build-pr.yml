@@ -47,6 +47,9 @@ jobs:
     - name: Check code format
       run: yarn format:check
 
+    - name: Check lint code
+      run: yarn lint
+
     - run: yarn test
     - run: yarn build --prod --progress=false
       env:
