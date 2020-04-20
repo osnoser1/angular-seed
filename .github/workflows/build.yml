@@ -3,6 +3,9 @@
 
 name: Node.js CI
 
+env:
+  PROJECT_NAME: angular-seed
+
 on:
   push:
     branches: [ master ]
@@ -56,3 +59,12 @@ jobs:
     - run: yarn build --prod --progress=false
       env:
         CI: true
+
+    - name: Deploy to netlify
+      uses: netlify/actions/cli@master
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
+      with:
+        args: deploy --dir=dist/$PROJECT_NAME
+        secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
