@@ -7,8 +7,6 @@ env:
   PROJECT_NAME: angular-seed
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
