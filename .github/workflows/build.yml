@@ -20,11 +20,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Cache node_modules folder
+      uses: actions/cache@v1
+      id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+      with:
+        path: ./node_modules
+        key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-cache-
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: yarn
+
+    - name: Install project dependencies
+      run: yarn
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
+
     - run: yarn test
     - run: yarn build --prod --progress=false
       env:
