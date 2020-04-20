@@ -46,6 +46,9 @@ jobs:
       run: yarn
       if: steps.yarn-cache.outputs.cache-hit != 'true'
 
+    - name: Check code format
+      run: yarn format:check
+
     - run: yarn test
     - run: yarn build --prod --progress=false
       env:
