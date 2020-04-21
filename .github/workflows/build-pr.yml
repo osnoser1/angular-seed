@@ -5,6 +5,7 @@ name: Node.js CI
 
 env:
   PROJECT_NAME: angular-seed
+  LAST_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
 
 on:
   pull_request:
@@ -66,3 +67,6 @@ jobs:
       with:
         args: deploy --dir=dist/$PROJECT_NAME
         secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
+
+    - name: Publish URL check
+      run: node deploy/status-checks
