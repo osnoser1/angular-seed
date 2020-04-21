@@ -61,17 +61,10 @@ jobs:
         CI: true
 
     - name: Deploy to netlify
-      uses: netlify/actions/cli@master
-      id: netlify-deploy
+      uses: nwtgck/actions-netlify@v1.0
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
       with:
-        args: deploy --dir=dist/$PROJECT_NAME
-        secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
-
-    - name: Publish URL check
-      run: node deploy/status-checks
-      env:
-        NETLIFY_URL: ${{ steps.netlify-deploy.outputs.NETLIFY_URL }}
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        publish-dir: dist/${{ env.PROJECT_NAME }}
+        github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
