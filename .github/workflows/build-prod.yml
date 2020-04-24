@@ -1,0 +1,72 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Prod - Continuous Integration / Continuous Deployment
+
+env:
+  PROJECT_NAME: angular-seed
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache node_modules folder
+      uses: actions/cache@v1
+      id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+      with:
+        path: ./node_modules
+        key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-cache-
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install project dependencies
+      run: yarn
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
+
+    - run: yarn build --prod --progress=false
+      env:
+        CI: true
+
+    - name: Update the dropplet
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PROD_SERVER_HOST }}
+        username: ${{ secrets.PROD_SERVER_USERNAME }}
+        key: ${{ secrets.PROD_SERVER_PRIVATE_KEY }}
+        source: "./deploy/*,./dist/*"
+        target: "/opt/app/upload"
+        strip_components: 1
+        rm: true
+
+    - name: Build the container and run it.
+      uses: appleboy/ssh-action@master
+      env:
+        DOMAINS: ${{ secrets.PROD_DOMAINS }} #page-1.com page-2.com page-3.com
+      with:
+        host: ${{ secrets.PROD_SERVER_HOST }}
+        username: ${{ secrets.PROD_SERVER_USERNAME }}
+        key: ${{ secrets.PROD_SERVER_PRIVATE_KEY }}
+        envs: DOMAINS
+        script: |
+          cd /opt/app/upload
+          chmod +x ./run.sh
+          DOMAINS=$DOMAINS ./run.sh
+        debug: true
